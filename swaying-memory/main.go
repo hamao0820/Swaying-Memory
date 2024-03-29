@@ -1,9 +1,8 @@
-package main
+package swayingmemory
 
 import (
 	"fmt"
 	"image/color"
-	"log"
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -12,8 +11,8 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
+	ScreenWidth  = 640
+	ScreenHeight = 480
 )
 
 type GameMode int
@@ -36,8 +35,8 @@ type Game struct {
 func newGame() *Game {
 	cards := []*Card{}
 	for _, i := range sample(16, 3) {
-		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(screenWidth-CardWidth), rand.Float64()*float64(screenHeight-CardHeight)))
-		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(screenWidth-CardWidth), rand.Float64()*float64(screenHeight-CardHeight)))
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(ScreenWidth-CardWidth), rand.Float64()*float64(ScreenHeight-CardHeight)))
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(ScreenWidth-CardWidth), rand.Float64()*float64(ScreenHeight-CardHeight)))
 	}
 
 	return &Game{
@@ -127,21 +126,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	return ScreenWidth, ScreenHeight
 }
 
 func (g *Game) tick() bool {
 	g.tickCounts++
 	return g.tickCounts < poseTime
-}
-
-func main() {
-	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Swaying Memory")
-	g := newGame()
-	if err := ebiten.RunGame(g); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func sample(n int, r int) []int {

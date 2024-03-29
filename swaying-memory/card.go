@@ -1,4 +1,4 @@
-package main
+package swayingmemory
 
 import (
 	"fmt"
@@ -180,10 +180,10 @@ func (c *Card) Update() {
 	}
 	c.x += c.dx
 	c.y += c.dy
-	if c.x < 0 || c.x > screenWidth-CardWidth {
+	if c.x < 0 || c.x > ScreenWidth-CardWidth {
 		c.dx *= -1
 	}
-	if c.y < 0 || c.y > screenHeight-CardHeight {
+	if c.y < 0 || c.y > ScreenHeight-CardHeight {
 		c.dy *= -1
 	}
 }

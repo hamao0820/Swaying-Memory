@@ -30,8 +30,8 @@ type GameScene struct {
 func NewGameScene() *GameScene {
 	cards := make([]*Card, 0)
 	for _, i := range sample(len(CardTypes), 3) {
-		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*ScreenWidth, rand.Float64()*ScreenHeight))
-		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*ScreenWidth, rand.Float64()*ScreenHeight))
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*(ScreenWidth-CardWidth), rand.Float64()*(ScreenHeight-CardHeight)))
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*(ScreenWidth-CardWidth), rand.Float64()*(ScreenHeight-CardHeight)))
 	}
 	sample := sample(len(cards), len(cards))
 	for i, j := range sample {

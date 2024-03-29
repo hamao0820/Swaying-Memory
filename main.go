@@ -30,6 +30,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{0x80, 0xff, 0x80, 0xff})
 	for _, card := range g.cards {
 		card.Draw(screen)
 	}

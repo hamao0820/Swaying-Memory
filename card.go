@@ -120,6 +120,7 @@ type Card struct {
 	dx, dy  float64
 	zIndex  int
 	hovered bool
+	flipped bool
 }
 
 var zIndex = 0
@@ -162,7 +163,9 @@ func (c *Card) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(c.x), float64(c.y))
 	screen.DrawImage(backImage, op)
-	if c.hovered {
+	if c.flipped {
+		screen.DrawImage(c.image, op)
+	} else if c.hovered {
 		screen.DrawImage(hoveredImage, op)
 	}
 }

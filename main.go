@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
@@ -44,9 +45,16 @@ func (g *Game) Update() error {
 			}
 		}
 	}
-	if hoveredCard != nil {
-		hoveredCard.hovered = true
+	if hoveredCard == nil {
+		return nil
 	}
+	hoveredCard.hovered = true
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		if !hoveredCard.flipped {
+			hoveredCard.flipped = !hoveredCard.flipped
+		}
+	}
+
 	return nil
 }
 

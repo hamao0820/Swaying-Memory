@@ -10,11 +10,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-const (
-	ScreenWidth  = 640
-	ScreenHeight = 480
-)
-
 type GameMode int
 
 const (
@@ -25,57 +20,60 @@ const (
 
 const poseTime = 30
 
-type Game struct {
+type GameScene struct {
 	cards         []*Card
 	fillipedCards [2]*Card
 	tickCounts    int
 	mode          GameMode
 }
 
-func newGame() *Game {
-	cards := []*Card{}
-	for _, i := range sample(16, 3) {
-		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(ScreenWidth-CardWidth), rand.Float64()*float64(ScreenHeight-CardHeight)))
-		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(ScreenWidth-CardWidth), rand.Float64()*float64(ScreenHeight-CardHeight)))
+func NewGameScene() *GameScene {
+	cards := make([]*Card, 0)
+	for _, i := range sample(len(CardTypes), 3) {
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*ScreenWidth, rand.Float64()*ScreenHeight))
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*ScreenWidth, rand.Float64()*ScreenHeight))
+	}
+	sample := sample(len(cards), len(cards))
+	for i, j := range sample {
+		cards[i], cards[j] = cards[j], cards[i]
 	}
 
-	return &Game{
+	return &GameScene{
 		cards: cards,
-		mode:  ModeZeroFlipped,
 	}
 }
 
-func (g *Game) Update() error {
-	for _, card := range g.cards {
+func (s *GameScene) Update(state *GameState) error {
+	for _, card := range s.cards {
 		card.Update()
 	}
 
-	if g.mode == ModeTwoFlipped {
+	if s.mode == ModeTwoFlipped {
 		ebiten.SetCursorShape(ebiten.CursorShapeNotAllowed)
-		if g.tick() {
+		if s.tick() {
 			return nil
 		}
 
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		if g.fillipedCards[0] != nil && g.fillipedCards[1] != nil {
-			if g.fillipedCards[0].Type == g.fillipedCards[1].Type {
-				g.fillipedCards[0].matched = true
-				g.fillipedCards[1].matched = true
+		if s.fillipedCards[0] != nil && s.fillipedCards[1] != nil {
+			if s.fillipedCards[0].Type == s.fillipedCards[1].Type {
+				s.fillipedCards[0].matched = true
+				s.fillipedCards[1].matched = true
 			} else {
-				g.fillipedCards[0].flipped = false
-				g.fillipedCards[1].flipped = false
+				s.fillipedCards[0].flipped = false
+				s.fillipedCards[1].flipped = false
 			}
-			g.fillipedCards[0] = nil
-			g.fillipedCards[1] = nil
+			s.fillipedCards[0] = nil
+			s.fillipedCards[1] = nil
 		}
 
-		g.tickCounts = 0
-		g.mode = ModeZeroFlipped
+		s.tickCounts = 0
+		s.mode = ModeZeroFlipped
 	}
 
 	x, y := ebiten.CursorPosition()
 	var hoveredCard *Card
-	for _, card := range g.cards {
+	for _, card := range s.cards {
 		if card.matched {
 			continue
 		}
@@ -94,22 +92,22 @@ func (g *Game) Update() error {
 	ebiten.SetCursorShape(ebiten.CursorShapePointer)
 	hoveredCard.hovered = true
 
-	if g.mode == ModeZeroFlipped {
+	if s.mode == ModeZeroFlipped {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			if !hoveredCard.flipped {
 				hoveredCard.flipped = true
-				g.fillipedCards[0] = hoveredCard
-				g.mode = ModeOneFlipped
+				s.fillipedCards[0] = hoveredCard
+				s.mode = ModeOneFlipped
 			}
 		}
 	}
 
-	if g.mode == ModeOneFlipped {
+	if s.mode == ModeOneFlipped {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			if !hoveredCard.flipped {
 				hoveredCard.flipped = true
-				g.fillipedCards[1] = hoveredCard
-				g.mode = ModeTwoFlipped
+				s.fillipedCards[1] = hoveredCard
+				s.mode = ModeTwoFlipped
 			}
 		}
 	}
@@ -117,21 +115,17 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
+func (s *GameScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0x80, 0xff, 0x80, 0xff})
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("%f", ebiten.ActualFPS()))
-	for _, card := range g.cards {
+	for _, card := range s.cards {
 		card.Draw(screen)
 	}
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return ScreenWidth, ScreenHeight
-}
-
-func (g *Game) tick() bool {
-	g.tickCounts++
-	return g.tickCounts < poseTime
+func (s *GameScene) tick() bool {
+	s.tickCounts++
+	return s.tickCounts < poseTime
 }
 
 func sample(n int, r int) []int {

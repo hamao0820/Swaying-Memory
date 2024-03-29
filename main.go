@@ -25,7 +25,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	ebiten.SetWindowSize(sm.ScreenWidth*2, sm.ScreenHeight*2)
+	ebiten.SetWindowSize(sm.ScreenWidth, sm.ScreenHeight)
 	ebiten.SetWindowTitle("Swaying Memory")
 	if err := ebiten.RunGame(&sm.Game{}); err != nil {
 		log.Fatal(err)

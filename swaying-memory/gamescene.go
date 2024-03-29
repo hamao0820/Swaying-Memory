@@ -21,7 +21,7 @@ const (
 
 const poseTime = 30
 
-var cardCounts = 3
+var cardCounts = 10
 
 type GameScene struct {
 	cards         []*Card
@@ -52,6 +52,9 @@ func (s *GameScene) Update(state *GameState) error {
 	}
 
 	if s.mode == ModeClear {
+		if state.Input.IsPressedSpace() {
+			state.SceneManager.GoTo(&TitleScene{})
+		}
 		return nil
 	}
 	s.time = time.Since(s.startTime).Milliseconds()
@@ -139,6 +142,7 @@ func (s *GameScene) Draw(screen *ebiten.Image) {
 		message := "Clear!"
 		drawBigText(screen, message, ScreenWidth/2-getBigTextWidth(message)/2, ScreenHeight/2-20, color.White)
 		drawNormalText(screen, time, ScreenWidth/2-getNormalTextWidth(time)/2, ScreenHeight/2+50, color.White)
+		drawNormalText(screen, "Press Space to Title", ScreenWidth/2-getNormalTextWidth("PPress Space to Title")/2, ScreenHeight/2+100, color.White)
 	} else {
 		drawNormalText(screen, time, 0, 20, color.White)
 	}

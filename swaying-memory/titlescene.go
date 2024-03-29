@@ -57,6 +57,9 @@ func (s *TitleScene) drawBackground(screen *ebiten.Image) {
 }
 
 func (s *TitleScene) Update(state *GameState) error {
+	if state.Input.IsPressedSpace() {
+		state.SceneManager.GoTo(NewGameScene())
+	}
 	gopher.Update()
 	return nil
 }

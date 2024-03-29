@@ -27,3 +27,7 @@ func (i *Input) GamepadIDButtonPressed() ebiten.GamepadID {
 func (i *Input) IsClicked() bool {
 	return inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
 }
+
+func (i *Input) IsPressedSpace() bool {
+	return inpututil.IsKeyJustPressed(ebiten.KeySpace)
+}

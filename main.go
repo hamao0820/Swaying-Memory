@@ -29,7 +29,7 @@ const poseTime = 30
 type Game struct {
 	cards         []*Card
 	fillipedCards [2]*Card
-	t             int
+	tickCounts    int
 	mode          GameMode
 }
 
@@ -52,9 +52,8 @@ func (g *Game) Update() error {
 	}
 
 	if g.mode == ModeTwoFlipped {
-		g.t++
 		ebiten.SetCursorShape(ebiten.CursorShapeNotAllowed)
-		if g.t < poseTime {
+		if g.tick() {
 			return nil
 		}
 
@@ -71,7 +70,7 @@ func (g *Game) Update() error {
 			g.fillipedCards[1] = nil
 		}
 
-		g.t = 0
+		g.tickCounts = 0
 		g.mode = ModeZeroFlipped
 	}
 
@@ -129,6 +128,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func (g *Game) tick() bool {
+	g.tickCounts++
+	return g.tickCounts < poseTime
 }
 
 func main() {

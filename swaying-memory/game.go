@@ -19,7 +19,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func (g *Game) Update() error {
 	if g.sceneManager == nil {
 		g.sceneManager = &SceneManager{}
-		g.sceneManager.GoTo(NewGameScene())
+		g.sceneManager.GoTo(&TitleScene{})
 	}
 
 	if err := g.sceneManager.Update(&g.input); err != nil {

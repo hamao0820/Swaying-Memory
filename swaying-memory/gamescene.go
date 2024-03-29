@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"image/color"
 	"math/rand"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -16,26 +16,33 @@ const (
 	ModeZeroFlipped GameMode = iota
 	ModeOneFlipped
 	ModeTwoFlipped
+	ModeClear
 )
 
 const poseTime = 30
+
+var cardCounts = 3
 
 type GameScene struct {
 	cards         []*Card
 	fillipedCards [2]*Card
 	tickCounts    int
+	matchedCounts int
 	mode          GameMode
+	startTime     time.Time
+	time          int64
 }
 
 func NewGameScene() *GameScene {
 	cards := make([]*Card, 0)
-	for _, i := range sample(len(CardTypes), 3) {
+	for _, i := range sample(len(CardTypes), cardCounts) {
 		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*(ScreenWidth-CardWidth), rand.Float64()*(ScreenHeight-CardHeight)))
 		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*(ScreenWidth-CardWidth), rand.Float64()*(ScreenHeight-CardHeight)))
 	}
 
 	return &GameScene{
-		cards: cards,
+		cards:     cards,
+		startTime: time.Now(),
 	}
 }
 
@@ -43,6 +50,11 @@ func (s *GameScene) Update(state *GameState) error {
 	for _, card := range s.cards {
 		card.Update()
 	}
+
+	if s.mode == ModeClear {
+		return nil
+	}
+	s.time = time.Since(s.startTime).Milliseconds()
 
 	if s.mode == ModeTwoFlipped {
 		ebiten.SetCursorShape(ebiten.CursorShapeNotAllowed)
@@ -55,6 +67,11 @@ func (s *GameScene) Update(state *GameState) error {
 			if s.fillipedCards[0].Type == s.fillipedCards[1].Type {
 				s.fillipedCards[0].matched = true
 				s.fillipedCards[1].matched = true
+				s.matchedCounts++
+				if s.matchedCounts == cardCounts {
+					s.mode = ModeClear
+					return nil
+				}
 			} else {
 				s.fillipedCards[0].flipped = false
 				s.fillipedCards[1].flipped = false
@@ -113,9 +130,17 @@ func (s *GameScene) Update(state *GameState) error {
 
 func (s *GameScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0x80, 0xff, 0x80, 0xff})
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("%f", ebiten.ActualFPS()))
 	for _, card := range s.cards {
 		card.Draw(screen)
+	}
+
+	time := fmt.Sprintf("time: %03.3f", float64(s.time)/1000)
+	if s.mode == ModeClear {
+		message := "Clear!"
+		drawBigText(screen, message, ScreenWidth/2-getBigTextWidth(message)/2, ScreenHeight/2-20, color.White)
+		drawNormalText(screen, time, ScreenWidth/2-getNormalTextWidth(time)/2, ScreenHeight/2+50, color.White)
+	} else {
+		drawNormalText(screen, time, 0, 20, color.White)
 	}
 }
 

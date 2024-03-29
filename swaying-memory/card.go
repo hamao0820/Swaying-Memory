@@ -2,6 +2,7 @@ package swayingmemory
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"math/rand"
 
@@ -107,10 +108,19 @@ var backImage *ebiten.Image
 var hoveredImage *ebiten.Image
 
 func init() {
+	img, _, err := ebitenutil.NewImageFromFile("resources/images/polka.png")
+	if err != nil {
+		panic(err)
+	}
+	polka := ebiten.NewImageFromImage(img.SubImage(image.Rect(0, 0, CardWidth, CardHeight)))
 	backImage = ebiten.NewImage(CardWidth, CardHeight)
-	backImage.Fill(color.RGBA{0x80, 0x80, 0x80, 0xff})
+	backImage.DrawImage(polka, nil)
 	hoveredImage = ebiten.NewImage(CardWidth, CardHeight)
-	hoveredImage.Fill(color.RGBA{0xbb, 0xbb, 0xbb, 0xff})
+	op := &ebiten.DrawImageOptions{}
+	op.ColorScale.SetR(1.1)
+	op.ColorScale.SetB(1.1)
+	op.ColorScale.SetG(1.1)
+	hoveredImage.DrawImage(polka, op)
 }
 
 type Card struct {

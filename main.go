@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"log"
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -14,9 +16,13 @@ const (
 	screenHeight = 480
 )
 
+const poseTime = 30
+
 type Game struct {
 	cards         []*Card
 	fillipedCards [2]*Card
+	t             int
+	posing        bool
 }
 
 func newGame() *Game {
@@ -36,6 +42,16 @@ func (g *Game) Update() error {
 		card.Update()
 	}
 
+	// 2枚目をめくったらposeTimeフレーム待つ
+	if g.posing {
+		g.t++
+		if g.t >= poseTime {
+			g.t = 0
+			g.posing = false
+		}
+		return nil
+	}
+
 	x, y := ebiten.CursorPosition()
 	var hoveredCard *Card
 	for _, card := range g.cards {
@@ -46,17 +62,21 @@ func (g *Game) Update() error {
 			}
 		}
 	}
+
 	if hoveredCard == nil {
 		return nil
 	}
 	hoveredCard.hovered = true
+
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if !hoveredCard.flipped {
-			hoveredCard.flipped = !hoveredCard.flipped
+			hoveredCard.flipped = true
 			if g.fillipedCards[0] == nil {
 				g.fillipedCards[0] = hoveredCard
 			} else if g.fillipedCards[1] == nil {
 				g.fillipedCards[1] = hoveredCard
+				g.posing = true
+				return nil
 			}
 		}
 	}
@@ -78,6 +98,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0x80, 0xff, 0x80, 0xff})
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("%f", ebiten.ActualFPS()))
 	for _, card := range g.cards {
 		card.Draw(screen)
 	}

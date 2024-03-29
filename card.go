@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type CardType string
@@ -105,10 +107,11 @@ type Card struct {
 	Type       CardType
 	frontImage *ebiten.Image
 	backImage  *ebiten.Image
-	x, y       int
+	x, y       float64
+	dx, dy     float64
 }
 
-func NewCard(t CardType, x, y int) *Card {
+func NewCard(t CardType, x, y float64) *Card {
 	gopher, err := loadGopher(t)
 	if err != nil {
 		panic(err)
@@ -137,6 +140,8 @@ func NewCard(t CardType, x, y int) *Card {
 		backImage:  back,
 		x:          x,
 		y:          y,
+		dx:         rand.Float64()*2 - 1,
+		dy:         rand.Float64()*2 - 1,
 	}
 }
 
@@ -144,4 +149,15 @@ func (c *Card) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(c.x), float64(c.y))
 	screen.DrawImage(c.frontImage, op)
+}
+
+func (c *Card) Update() {
+	c.x += c.dx
+	c.y += c.dy
+	if c.x < 0 || c.x > screenWidth-CardWidth {
+		c.dx *= -1
+	}
+	if c.y < 0 || c.y > screenHeight-CardHeight {
+		c.dy *= -1
+	}
 }

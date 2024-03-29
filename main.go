@@ -1,7 +1,9 @@
 package main
 
 import (
+	"image/color"
 	"log"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -17,15 +19,20 @@ type Game struct {
 
 func newGame() *Game {
 	cards := []*Card{}
-	for i, cardType := range CardTypes {
-		cards = append(cards, NewCard(cardType, i%5*(CardWidth+5), +i/5*(CardHeight+5)))
-	}
+	cards = append(cards, NewCard(CardTypeBeer, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
+	cards = append(cards, NewCard(CardTypeCook, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
+	cards = append(cards, NewCard(CardTypeBalloon, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
+	cards = append(cards, NewCard(CardTypeSleepy, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
+
 	return &Game{
 		cards: cards,
 	}
 }
 
 func (g *Game) Update() error {
+	for _, card := range g.cards {
+		card.Update()
+	}
 	return nil
 }
 

@@ -115,6 +115,11 @@ func NewCard(t CardType, x, y int) *Card {
 	}
 	front := ebiten.NewImage(CardWidth, CardHeight)
 	front.Fill(color.White)
+	vector.StrokeLine(front, 0, 1, CardWidth, 1, 1, color.Black, false)
+	vector.StrokeLine(front, CardWidth, 0, CardWidth, CardHeight, 1, color.Black, false)
+	vector.StrokeLine(front, CardWidth, CardHeight, 0, CardHeight, 1, color.Black, false)
+	vector.StrokeLine(front, 1, 0, 1, CardHeight, 1, color.Black, false)
+
 	scale := 0.15
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(scale, scale)

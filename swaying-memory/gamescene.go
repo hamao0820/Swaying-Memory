@@ -33,10 +33,6 @@ func NewGameScene() *GameScene {
 		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*(ScreenWidth-CardWidth), rand.Float64()*(ScreenHeight-CardHeight)))
 		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*(ScreenWidth-CardWidth), rand.Float64()*(ScreenHeight-CardHeight)))
 	}
-	sample := sample(len(cards), len(cards))
-	for i, j := range sample {
-		cards[i], cards[j] = cards[j], cards[i]
-	}
 
 	return &GameScene{
 		cards: cards,

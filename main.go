@@ -20,10 +20,10 @@ type Game struct {
 
 func newGame() *Game {
 	cards := []*Card{}
-	cards = append(cards, NewCard(CardTypeBeer, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
-	cards = append(cards, NewCard(CardTypeCook, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
-	cards = append(cards, NewCard(CardTypeBalloon, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
-	cards = append(cards, NewCard(CardTypeSleepy, rand.Float64()*(screenWidth-CardWidth), rand.Float64()*(screenHeight-CardHeight)))
+	for _, i := range sample(16, 5) {
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(screenWidth-CardWidth), rand.Float64()*float64(screenHeight-CardHeight)))
+		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(screenWidth-CardWidth), rand.Float64()*float64(screenHeight-CardHeight)))
+	}
 
 	return &Game{
 		cards: cards,
@@ -76,4 +76,15 @@ func main() {
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func sample(n int, r int) []int {
+	sample := make([]int, n)
+	for i := 0; i < n; i++ {
+		sample[i] = i
+	}
+	rand.Shuffle(n, func(i, j int) {
+		sample[i], sample[j] = sample[j], sample[i]
+	})
+	return sample[:r]
 }

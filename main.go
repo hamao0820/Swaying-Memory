@@ -33,6 +33,20 @@ func (g *Game) Update() error {
 	for _, card := range g.cards {
 		card.Update()
 	}
+
+	x, y := ebiten.CursorPosition()
+	var hoveredCard *Card
+	for _, card := range g.cards {
+		card.hovered = false
+		if card.In(x, y) {
+			if hoveredCard == nil || card.zIndex > hoveredCard.zIndex {
+				hoveredCard = card
+			}
+		}
+	}
+	if hoveredCard != nil {
+		hoveredCard.hovered = true
+	}
 	return nil
 }
 

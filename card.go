@@ -7,7 +7,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -104,13 +103,26 @@ const (
 	CardHeight = 80
 )
 
-type Card struct {
-	Type       CardType
-	frontImage *ebiten.Image
-	backImage  *ebiten.Image
-	x, y       float64
-	dx, dy     float64
+var backImage *ebiten.Image
+var hoveredImage *ebiten.Image
+
+func init() {
+	backImage = ebiten.NewImage(CardWidth, CardHeight)
+	backImage.Fill(color.RGBA{0x80, 0x80, 0x80, 0xff})
+	hoveredImage = ebiten.NewImage(CardWidth, CardHeight)
+	hoveredImage.Fill(color.RGBA{0xbb, 0xbb, 0xbb, 0xff})
 }
+
+type Card struct {
+	Type    CardType
+	image   *ebiten.Image
+	x, y    float64
+	dx, dy  float64
+	zIndex  int
+	hovered bool
+}
+
+var zIndex = 0
 
 func NewCard(t CardType, x, y float64) *Card {
 	gopher, err := loadGopher(t)
@@ -129,27 +141,30 @@ func NewCard(t CardType, x, y float64) *Card {
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(float64(CardWidth/2-float64(gopher.Bounds().Dx())*scale/2), float64(CardHeight/2-float64(gopher.Bounds().Dy())*scale/2))
 	front.DrawImage(gopher, op)
-	back := ebiten.NewImage(CardWidth, CardHeight)
-	back.Fill(color.RGBA{0x80, 0x80, 0x80, 0xff})
-
+	defer func() {
+		zIndex++
+	}()
 	if err != nil {
 		panic(err)
 	}
 	return &Card{
-		Type:       t,
-		frontImage: front,
-		backImage:  back,
-		x:          x,
-		y:          y,
-		dx:         rand.Float64()*2 - 1,
-		dy:         rand.Float64()*2 - 1,
+		Type:   t,
+		image:  front,
+		x:      x,
+		y:      y,
+		dx:     rand.Float64()*2 - 1,
+		dy:     rand.Float64()*2 - 1,
+		zIndex: zIndex,
 	}
 }
 
 func (c *Card) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(c.x), float64(c.y))
-	screen.DrawImage(c.frontImage, op)
+	screen.DrawImage(backImage, op)
+	if c.hovered {
+		screen.DrawImage(hoveredImage, op)
+	}
 }
 
 func (c *Card) Update() {
@@ -160,11 +175,6 @@ func (c *Card) Update() {
 	}
 	if c.y < 0 || c.y > screenHeight-CardHeight {
 		c.dy *= -1
-	}
-
-	x, y := ebiten.CursorPosition()
-	if c.In(x, y) && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		c.frontImage, c.backImage = c.backImage, c.frontImage
 	}
 }
 

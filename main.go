@@ -16,13 +16,21 @@ const (
 	screenHeight = 480
 )
 
+type GameMode int
+
+const (
+	ModeZeroFlipped GameMode = iota
+	ModeOneFlipped
+	ModeTwoFlipped
+)
+
 const poseTime = 30
 
 type Game struct {
 	cards         []*Card
 	fillipedCards [2]*Card
 	t             int
-	posing        bool
+	mode          GameMode
 }
 
 func newGame() *Game {
@@ -34,6 +42,7 @@ func newGame() *Game {
 
 	return &Game{
 		cards: cards,
+		mode:  ModeZeroFlipped,
 	}
 }
 
@@ -42,7 +51,29 @@ func (g *Game) Update() error {
 		card.Update()
 	}
 
-	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+	if g.mode == ModeTwoFlipped {
+		g.t++
+		ebiten.SetCursorShape(ebiten.CursorShapeNotAllowed)
+		if g.t < poseTime {
+			return nil
+		}
+
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		if g.fillipedCards[0] != nil && g.fillipedCards[1] != nil {
+			if g.fillipedCards[0].Type == g.fillipedCards[1].Type {
+				g.fillipedCards[0].matched = true
+				g.fillipedCards[1].matched = true
+			} else {
+				g.fillipedCards[0].flipped = false
+				g.fillipedCards[1].flipped = false
+			}
+			g.fillipedCards[0] = nil
+			g.fillipedCards[1] = nil
+		}
+
+		g.t = 0
+		g.mode = ModeZeroFlipped
+	}
 
 	x, y := ebiten.CursorPosition()
 	var hoveredCard *Card
@@ -58,46 +89,31 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// 2枚目をめくったらposeTimeフレーム待つ
-	if g.posing {
-		g.t++
-		ebiten.SetCursorShape(ebiten.CursorShapeNotAllowed)
-		if g.t >= poseTime {
-			g.t = 0
-			g.posing = false
-		}
-		return nil
-	}
-
+	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 	if hoveredCard == nil {
 		return nil
 	}
 	ebiten.SetCursorShape(ebiten.CursorShapePointer)
 	hoveredCard.hovered = true
 
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		if !hoveredCard.flipped {
-			hoveredCard.flipped = true
-			if g.fillipedCards[0] == nil {
+	if g.mode == ModeZeroFlipped {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			if !hoveredCard.flipped {
+				hoveredCard.flipped = true
 				g.fillipedCards[0] = hoveredCard
-			} else if g.fillipedCards[1] == nil {
-				g.fillipedCards[1] = hoveredCard
-				g.posing = true
-				return nil
+				g.mode = ModeOneFlipped
 			}
 		}
 	}
 
-	if g.fillipedCards[0] != nil && g.fillipedCards[1] != nil {
-		if g.fillipedCards[0].Type == g.fillipedCards[1].Type {
-			g.fillipedCards[0].matched = true
-			g.fillipedCards[1].matched = true
-		} else {
-			g.fillipedCards[0].flipped = false
-			g.fillipedCards[1].flipped = false
+	if g.mode == ModeOneFlipped {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			if !hoveredCard.flipped {
+				hoveredCard.flipped = true
+				g.fillipedCards[1] = hoveredCard
+				g.mode = ModeTwoFlipped
+			}
 		}
-		g.fillipedCards[0] = nil
-		g.fillipedCards[1] = nil
 	}
 
 	return nil

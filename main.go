@@ -15,7 +15,8 @@ const (
 )
 
 type Game struct {
-	cards []*Card
+	cards         []*Card
+	fillipedCards [2]*Card
 }
 
 func newGame() *Game {
@@ -52,7 +53,24 @@ func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		if !hoveredCard.flipped {
 			hoveredCard.flipped = !hoveredCard.flipped
+			if g.fillipedCards[0] == nil {
+				g.fillipedCards[0] = hoveredCard
+			} else if g.fillipedCards[1] == nil {
+				g.fillipedCards[1] = hoveredCard
+			}
 		}
+	}
+
+	if g.fillipedCards[0] != nil && g.fillipedCards[1] != nil {
+		if g.fillipedCards[0].Type == g.fillipedCards[1].Type {
+			g.fillipedCards[0].matched = true
+			g.fillipedCards[1].matched = true
+		} else {
+			g.fillipedCards[0].flipped = false
+			g.fillipedCards[1].flipped = false
+		}
+		g.fillipedCards[0] = nil
+		g.fillipedCards[1] = nil
 	}
 
 	return nil

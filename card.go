@@ -121,6 +121,7 @@ type Card struct {
 	zIndex  int
 	hovered bool
 	flipped bool
+	matched bool
 }
 
 var zIndex = 0
@@ -160,6 +161,9 @@ func NewCard(t CardType, x, y float64) *Card {
 }
 
 func (c *Card) Draw(screen *ebiten.Image) {
+	if c.matched {
+		return
+	}
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(c.x), float64(c.y))
 	screen.DrawImage(backImage, op)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -160,4 +161,13 @@ func (c *Card) Update() {
 	if c.y < 0 || c.y > screenHeight-CardHeight {
 		c.dy *= -1
 	}
+
+	x, y := ebiten.CursorPosition()
+	if c.In(x, y) && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		c.frontImage, c.backImage = c.backImage, c.frontImage
+	}
+}
+
+func (c *Card) In(x, y int) bool {
+	return c.x < float64(x) && float64(x) < c.x+CardWidth && c.y < float64(y) && float64(y) < c.y+CardHeight
 }

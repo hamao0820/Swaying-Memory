@@ -175,6 +175,9 @@ func (c *Card) Draw(screen *ebiten.Image) {
 }
 
 func (c *Card) Update() {
+	if c.matched {
+		return
+	}
 	c.x += c.dx
 	c.y += c.dy
 	if c.x < 0 || c.x > screenWidth-CardWidth {

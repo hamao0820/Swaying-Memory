@@ -27,7 +27,7 @@ type Game struct {
 
 func newGame() *Game {
 	cards := []*Card{}
-	for _, i := range sample(16, 5) {
+	for _, i := range sample(16, 3) {
 		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(screenWidth-CardWidth), rand.Float64()*float64(screenHeight-CardHeight)))
 		cards = append(cards, NewCard(CardTypes[i], rand.Float64()*float64(screenWidth-CardWidth), rand.Float64()*float64(screenHeight-CardHeight)))
 	}
@@ -42,19 +42,14 @@ func (g *Game) Update() error {
 		card.Update()
 	}
 
-	// 2枚目をめくったらposeTimeフレーム待つ
-	if g.posing {
-		g.t++
-		if g.t >= poseTime {
-			g.t = 0
-			g.posing = false
-		}
-		return nil
-	}
+	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 
 	x, y := ebiten.CursorPosition()
 	var hoveredCard *Card
 	for _, card := range g.cards {
+		if card.matched {
+			continue
+		}
 		card.hovered = false
 		if card.In(x, y) {
 			if hoveredCard == nil || card.zIndex > hoveredCard.zIndex {
@@ -63,9 +58,21 @@ func (g *Game) Update() error {
 		}
 	}
 
+	// 2枚目をめくったらposeTimeフレーム待つ
+	if g.posing {
+		g.t++
+		ebiten.SetCursorShape(ebiten.CursorShapeNotAllowed)
+		if g.t >= poseTime {
+			g.t = 0
+			g.posing = false
+		}
+		return nil
+	}
+
 	if hoveredCard == nil {
 		return nil
 	}
+	ebiten.SetCursorShape(ebiten.CursorShapePointer)
 	hoveredCard.hovered = true
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
